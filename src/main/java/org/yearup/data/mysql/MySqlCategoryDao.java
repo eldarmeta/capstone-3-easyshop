@@ -8,6 +8,11 @@ import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.util.ArrayList;
+
+
 
 @Component
 public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
@@ -20,9 +25,31 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
     @Override
     public List<Category> getAllCategories()
     {
-        // get all categories
-        return null;
+        List<Category> categories = new ArrayList<>();
+
+        String sql = """
+        SELECT category_id, name, description
+        FROM categories
+    """;
+
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery())
+        {
+            while (resultSet.next())
+            {
+                Category category = mapRow(resultSet);
+                categories.add(category);
+            }
+        }
+        catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        return categories;
     }
+
 
     @Override
     public Category getById(int categoryId)
