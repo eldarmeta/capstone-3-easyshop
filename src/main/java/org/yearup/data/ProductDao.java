@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface ProductDao
 {
+    List<Product> getProductsByCategoryId(int categoryId);
     List<Product> search(Integer categoryId, BigDecimal minPrice, BigDecimal maxPrice, String subCategory);
     List<Product> listByCategoryId(int categoryId);
     Product getById(int productId);

@@ -13,6 +13,37 @@ import java.util.List;
 @Component
 public class MySqlProductDao extends MySqlDaoBase implements ProductDao
 {
+    @Override
+    public List<Product> getProductsByCategoryId(int categoryId)
+    {
+        List<Product> products = new ArrayList<>();
+
+        String sql = """
+        SELECT *
+        FROM products
+        WHERE category_id = ?
+    """;
+
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql))
+        {
+            statement.setInt(1, categoryId);
+
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next())
+            {
+                products.add(mapRow(resultSet));
+            }
+        }
+        catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        return products;
+    }
+
     public MySqlProductDao(DataSource dataSource)
     {
         super(dataSource);
