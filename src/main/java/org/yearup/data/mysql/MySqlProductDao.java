@@ -56,30 +56,34 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao
 
         String sql = "SELECT * FROM products " +
                 "WHERE (category_id = ? OR ? = -1) " +
+                "   AND (price >= ? OR ? = -1) " +
                 "   AND (price <= ? OR ? = -1) " +
-                "   AND (subcategory = ? OR ? = '') ";
+                "  AND (LOWER(subcategory) = LOWER(?) OR ? = '') ";
 
-        categoryId = categoryId == null ? -1 : categoryId;
-        minPrice = minPrice == null ? new BigDecimal("-1") : minPrice;
-        maxPrice = maxPrice == null ? new BigDecimal("-1") : maxPrice;
-        subCategory = subCategory == null ? "" : subCategory;
+        int cat = (categoryId == null) ? -1 : categoryId;
+        BigDecimal min = (minPrice == null) ? new BigDecimal("-1") : minPrice;
+        BigDecimal max = (maxPrice == null) ? new BigDecimal("-1") : maxPrice;
+        String sub = (subCategory == null) ? "" : subCategory;
 
-        try (Connection connection = getConnection())
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql))
         {
-            PreparedStatement statement = connection.prepareStatement(sql);
-            statement.setInt(1, categoryId);
-            statement.setInt(2, categoryId);
-            statement.setBigDecimal(3, minPrice);
-            statement.setBigDecimal(4, minPrice);
-            statement.setString(5, subCategory);
-            statement.setString(6, subCategory);
+            statement.setInt(1, cat);
+            statement.setInt(2, cat);
+
+            statement.setBigDecimal(3, min);
+            statement.setBigDecimal(4, min);
+
+            statement.setBigDecimal(5, max);
+            statement.setBigDecimal(6, max);
+
+            statement.setString(7, sub);
+            statement.setString(8, sub);
 
             ResultSet row = statement.executeQuery();
-
             while (row.next())
             {
-                Product product = mapRow(row);
-                products.add(product);
+                products.add(mapRow(row));
             }
         }
         catch (SQLException e)
